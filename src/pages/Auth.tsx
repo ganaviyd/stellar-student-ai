@@ -43,10 +43,28 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter email and password",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (!fullName || !branch || !year) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all fields",
+        description: "Please fill in all fields including branch and year",
         variant: "destructive",
       });
       return;
@@ -54,7 +72,7 @@ const Auth = () => {
 
     setLoading(true);
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -78,13 +96,29 @@ const Auth = () => {
     } else {
       toast({
         title: "Success!",
-        description: "Account created successfully. You can now sign in.",
+        description: "Account created successfully. Please check your email to confirm (or sign in directly if auto-confirm is enabled).",
       });
+      // Clear form
+      setEmail("");
+      setPassword("");
+      setFullName("");
+      setBranch("");
+      setYear("");
     }
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email || !password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter email and password",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await supabase.auth.signInWithPassword({
@@ -101,6 +135,10 @@ const Auth = () => {
         variant: "destructive",
       });
     } else {
+      toast({
+        title: "Welcome back!",
+        description: "Successfully signed in",
+      });
       navigate("/dashboard");
     }
   };
@@ -193,8 +231,8 @@ const Auth = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="branch">Branch</Label>
-                  <Select value={branch} onValueChange={setBranch} required>
+                  <Label htmlFor="branch">Branch *</Label>
+                  <Select value={branch} onValueChange={setBranch}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your branch" />
                     </SelectTrigger>
@@ -208,8 +246,8 @@ const Auth = () => {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="year">Year</Label>
-                  <Select value={year} onValueChange={setYear} required>
+                  <Label htmlFor="year">Year *</Label>
+                  <Select value={year} onValueChange={setYear}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select your year" />
                     </SelectTrigger>
